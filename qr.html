@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>QR for Local Site</title>
+<style>
+  body{font-family:Arial;background:#f6f8fb;padding:20px;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.08);max-width:520px;width:100%;text-align:center}
+  input{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:10px}
+  .row{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  button{padding:10px 14px;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer;font-weight:700}
+  button.secondary{background:#10b981}
+  canvas{margin-top:12px;background:#fff;padding:8px;border-radius:8px}
+  .hint{margin-top:10px;color:#444;font-size:13px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h2>QR for Local Site</h2>
+
+    <!-- Put your local URL here (prefilled) -->
+    <input id="urlInput" type="text" value="http://192.168.29.236:8000/index.html">
+
+    <div class="row">
+      <button id="genBtn">Generate</button>
+      <button id="downloadBtn" class="secondary">Download PNG</button>
+    </div>
+
+    <canvas id="qr" width="280" height="280"></canvas>
+    <div class="hint">Tip: Scan the downloaded PNG from your phone (must be on same Wi-Fi).</div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script>
+    const input = document.getElementById('urlInput');
+    const genBtn = document.getElementById('genBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const canvas = document.getElementById('qr');
+    const qr = new QRious({ element: canvas, size: 280, value: input.value });
+
+    function generate() {
+      let url = input.value.trim();
+      if (!url) { alert('Please enter a URL'); return; }
+      // Ensure protocol present
+      if (!/^https?:\/\//i.test(url) && !/^file:\/\//i.test(url)) url = 'http://' + url;
+      qr.set({ value: url });
+    }
+    genBtn.addEventListener('click', generate);
+
+    downloadBtn.addEventListener('click', () => {
+      generate();
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      const safeName = (input.value.trim() || 'qr').replace(/[^a-z0-9_\-]/gi, '_').slice(0,60);
+      a.download = safeName + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    window.addEventListener('load', generate);
+  </script>
+</body>
+</html>
